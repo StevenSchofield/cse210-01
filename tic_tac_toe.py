@@ -1,8 +1,8 @@
 # Nested array to keep track of the current board state
 game_board = [
-    [0,0,0],
-    [0,0,0],
-    [0,0,0]]
+    [0,1,0],
+    [2,1,2],
+    [0,2,0]]
 
 # Simplify the translation process so I can use numbers in code and letters in display
 piece_translation = [" ", "X", "O"]
@@ -44,11 +44,11 @@ def player_input(playerNumber, boardArray):
             if i == 2:
                 print("\nSorry, the first character needs to be one of the letters \"A\", \"B\", or \"C\". " +\
                     "Please try again.")
-                return player_input(playerNumber)
+                return player_input(playerNumber, boardArray)
     else:
         print("\nSorry, the first character needs to be one of the letters \"A\", \"B\", or \"C\". " +\
             "Please try again.")
-        return player_input(playerNumber)
+        return player_input(playerNumber, boardArray)
 
     # The second character needs to be a number less than 3 (note that the input will be 1 larger than the actual index)
     if positionIndex[1].isdigit() and int(positionIndex[1]) <= 3 and int(positionIndex[1]) != 0:
@@ -56,9 +56,15 @@ def player_input(playerNumber, boardArray):
     else:
         print("\nSorry, the second character needs to be a number between 1 and 3. " +\
             "Please try again.")
-        return player_input(playerNumber)  
+        return player_input(playerNumber, boardArray)  
 
+    # Ensure the selected tile has not been taken already
+    print(boardArray[positionIndex[0]][positionIndex[1]])
+    if boardArray[positionIndex[0]][positionIndex[1]] != 0:
+        print("\nSorry, that position has already been claimed. Please try again.")
+        return player_input(playerNumber, boardArray)
     
     return positionIndex
 
-print(player_input(1))
+print(player_input(1, game_board))
+print_board(game_board)
