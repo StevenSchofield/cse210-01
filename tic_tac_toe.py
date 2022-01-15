@@ -1,8 +1,11 @@
 # Nested array to keep track of the current board state
+from operator import truediv
+
+
 game_board = [
-    [0,1,0],
-    [2,1,2],
-    [0,2,0]]
+    [0,0,0],
+    [0,0,0],
+    [0,0,0]]
 
 # Simplify the translation process so I can use numbers in code and letters in display
 piece_translation = [" ", "X", "O"]
@@ -10,7 +13,7 @@ index_translation = ["A", "B", "C"]
 
 # Display the current board state, including indexes
 def print_board(boardArray):
-    print(" |1|2|3")
+    print("\n |1|2|3")
     for rowIndex in range(0,3):
         print_line = str(index_translation[rowIndex])
         print("--------")
@@ -20,6 +23,7 @@ def print_board(boardArray):
             print_line += piece_translation[index]
         
         print(print_line)
+    print("\n")
 
 # Function to handle and verify player input
 def player_input(playerNumber, boardArray):
@@ -59,12 +63,39 @@ def player_input(playerNumber, boardArray):
         return player_input(playerNumber, boardArray)  
 
     # Ensure the selected tile has not been taken already
-    print(boardArray[positionIndex[0]][positionIndex[1]])
     if boardArray[positionIndex[0]][positionIndex[1]] != 0:
         print("\nSorry, that position has already been claimed. Please try again.")
         return player_input(playerNumber, boardArray)
     
     return positionIndex
 
-print(player_input(1, game_board))
-print_board(game_board)
+def checkWinCondition(boardArray, runs):
+    if runs == 9:
+        return False
+    else:
+        return True
+
+
+def main():
+    player = 1
+
+    runs = 1
+
+    # Welcome message!
+    print("Thank you for playing Tic-Tak-Toe today! Remember: first to get 3 in a row wins!\n\n")
+
+    while checkWinCondition(game_board, runs):
+        runs += 1
+        print_board(game_board)
+        input = player_input(player, game_board)
+
+        game_board[input[0]][input[1]] = player
+
+        if player == 1:
+            player = 2
+        else:
+            player = 1
+    
+    print("Thank you for playing!")
+
+main()
