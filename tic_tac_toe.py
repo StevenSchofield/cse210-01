@@ -1,7 +1,4 @@
 # Nested array to keep track of the current board state
-from operator import truediv
-
-
 game_board = [
     [0,0,0],
     [0,0,0],
@@ -25,7 +22,7 @@ def print_board(boardArray):
         print(print_line)
     print("\n")
 
-# Function to handle and verify player input
+# Handle and verify player input
 def player_input(playerNumber, boardArray):
     positionIndex = []
     positionString = input("Player " + str(playerNumber) + ", please input which position you would like to mark: ")
@@ -33,7 +30,7 @@ def player_input(playerNumber, boardArray):
     # A position index should only have 2 characters: letter for the row, number for the colum
     if len(positionString) != 2:
         print("\nSorry, that input is the wrong size. Please input a position in the format of \"A1\" or \"B3\".")
-        return player_input(playerNumber)
+        return player_input(playerNumber, boardArray)
 
     positionIndex.append(positionString[0])
     positionIndex.append(positionString[1])
@@ -69,11 +66,36 @@ def player_input(playerNumber, boardArray):
     
     return positionIndex
 
-def checkWinCondition(boardArray, runs):
-    if runs == 9:
-        return False
-    else:
-        return True
+# Run through every cell and check if it is in a line of 3 of itself. Return the winner, or zero
+def checkWinCondition(boardArray):
+    y = 0
+    max = len(boardArray)
+
+    # Loop through every position and check if it is 
+    while y < max:
+        x = 0
+
+        while x < max:
+            # If unmarked, no need to check for completion on this cell
+            if boardArray[y][x] != 0:
+                # Horizontal check (skip if on edge)
+                if x != 0 and x != max-1:
+                    if boardArray[y][x-1] == boardArray[y][x] and boardArray[y][x] == boardArray[y][x+1]:
+                        return boardArray[y][x]
+                # Vertical check (skip if on edge)
+                if y != 0 and y != max-1:
+                    if boardArray[y-1][x] == boardArray[y][x] and boardArray[y][x] == boardArray[y+1][x]:
+                        return boardArray[y][x]
+                # Diagonal checks (I could have put them in one of the previous checks, but I think this looks nicer)
+                if y != 0 and y != max-1 and x != 0 and x != max-1:
+                    if boardArray[y-1][x-1] == boardArray[y][x] and boardArray[y][x] == boardArray[y+1][x+1]:
+                        return boardArray[y][x]
+                    elif boardArray[y+1][x-1] == boardArray[y][x] and boardArray[y][x] == boardArray[y-1][x+1]:
+                        return boardArray[y][x]
+            x += 1
+        y += 1
+    
+    return 0
 
 
 def main():
@@ -82,10 +104,9 @@ def main():
     runs = 1
 
     # Welcome message!
-    print("Thank you for playing Tic-Tak-Toe today! Remember: first to get 3 in a row wins!\n\n")
+    print("Thank you for playing Tic-Tak-Toe today! Remember: first to get 3 in a row wins! X is always player 1.\n\n")
 
-    while checkWinCondition(game_board, runs):
-        runs += 1
+    while checkWinCondition(game_board) == 0 and runs <= 9:
         print_board(game_board)
         input = player_input(player, game_board)
 
@@ -95,7 +116,15 @@ def main():
             player = 2
         else:
             player = 1
+        
+        runs += 1
     
-    print("Thank you for playing!")
+    print_board(game_board)
+    results = checkWinCondition(game_board)
+    if results == 0:
+        print("\nIt's a draw!\n")
+    else:
+        print("Player " + str(results) + " wins!")
 
+    print("Thank you for playing!")
 main()
