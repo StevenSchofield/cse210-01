@@ -180,7 +180,7 @@ def helpMenu():
     print("\nPossible commands: ")
     print("R - Rules. Official rules and available commands for this version")
     print("H - Help. Repeats this list. Not available during play")
-    print("X - Custom game. Create a board of any size from 3-9")
+    #print("X - Custom game. Create a board of any size from 3-9")
     print("P - Quick play. Start a standard game on a 3x3 board")
     print("Q - Quit. Exits program.")
 
