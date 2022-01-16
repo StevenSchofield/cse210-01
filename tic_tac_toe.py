@@ -1,19 +1,36 @@
-# Nested array to keep track of the current board state
-game_board = [
-    [0,0,0],
-    [0,0,0],
-    [0,0,0]]
+# Code created by Steven Schofield. Last updated 1/15/2022
+# Made for CSE210-01 Solo Code Submission
+
+# Nested array to keep track of the current board state (setup later)
+game_board = []
 
 # Simplify the translation process so I can use numbers in code and letters in display
 piece_translation = [" ", "X", "O"]
-index_translation = ["A", "B", "C"]
+index_translation = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
+
+# Create a board with variable sizes
+def setup_board(boardSize:int):
+    placeholder = []
+    for index in range(0, boardSize):
+        placeholder2 = []
+        for index2 in range(0, boardSize):
+            placeholder2.append(0)
+        placeholder.append(placeholder2)
+    return placeholder
 
 # Display the current board state, including indexes
 def print_board(boardArray):
-    print("\n |1|2|3")
-    for rowIndex in range(0,3):
+    # Since it is no longer always set in stone, prepare the various lines for printing
+    initialLine = "\n "
+    midLine = "-"
+    for index in range(len(boardArray)):
+        initialLine += "|" + str(index+1)
+        midLine += "--"
+
+    print(initialLine)
+    for rowIndex in range(0,len(boardArray)):
         print_line = str(index_translation[rowIndex])
-        print("--------")
+        print(midLine)
 
         for index in boardArray[rowIndex]:
             print_line += "|"
@@ -22,10 +39,63 @@ def print_board(boardArray):
         print(print_line)
     print("\n")
 
+# Handle play options before the game begins
+def setup_play():
+    command = input("\nWhat is your command: ")
+
+    if len(command) != 1 or command.isnumeric(): 
+        print("Please only use a single letter for commands.")
+        setup_play()
+    
+    command = command.capitalize()
+
+    match command:
+        case "R":
+            print("\nThe game is played on a grid that is generally three squares by three squares. Example:")
+            print_board(setup_board(3))
+            print("Player one uses x's. Player two uses o's.")
+            print("Players take turns putting their marks in empty squares.")
+            print("The first player to get three of their marks in a row (vertically, horizontally, or diagonally) is the winner.")
+            print("If all nine squares are full and neither player has three in a row, the game ends in a draw.\n")
+            print("\nWhile playing, mark a position by putting in the corrdinates displayed on the top and side of the board. " \
+                + "Use letter/row followed by number/column. Example: B3")
+            return setup_play()
+        case "H":
+            helpMenu()
+            return setup_play()
+        case "X":
+            customSize = input("Please input the size of board you would like to play on: ")
+            if customSize.isdigit():
+                customSize = int(customSize)
+                if customSize < 3:
+                    print("Sorry, that board size is too small. Setting up a 3x3 board instead...")
+                    return setup_board(3)
+                elif customSize > 9:
+                    print("Sorry, that board size is too big. Setting up a 9x9 board instead...")
+                    return setup_board(9)
+                else:
+                    return setup_board(customSize)
+            else:
+                print("That is not a recognized size. Setting up a default board size...")  
+                return setup_board(3)
+        case "P":
+            return setup_board(3)
+        case "Q":
+            print("\n\nThank you for playing!\n")
+            quit()
+        case _:
+            print("Unrecognized command, please try again.")
+            return setup_play()
+
 # Handle and verify player input
 def player_input(playerNumber, boardArray):
     positionIndex = []
     positionString = input("Player " + str(playerNumber) + ", please input which position you would like to mark: ")
+
+    # Adding a quit option because I wanted to
+    if positionString == "Q" or positionString == "q":
+        print("\n\nSorry to see you leave. Thank you for playing!")
+        quit()
 
     # A position index should only have 2 characters: letter for the row, number for the colum
     if len(positionString) != 2:
@@ -37,25 +107,25 @@ def player_input(playerNumber, boardArray):
 
     # The first character (letter) represents the row, and should be translated to a number
     if type(positionIndex[0]) == type(""):
-        for i in range(0, 3):
+        for i in range(0, len(boardArray)):
             if index_translation[i] == positionIndex[0].capitalize():
                 positionIndex[0] = i
                 break
             
-            if i == 2:
-                print("\nSorry, the first character needs to be one of the letters \"A\", \"B\", or \"C\". " +\
+            if i == len(boardArray)-1:
+                print("\nSorry, the first character represents a position that is out of range. " +\
                     "Please try again.")
                 return player_input(playerNumber, boardArray)
     else:
-        print("\nSorry, the first character needs to be one of the letters \"A\", \"B\", or \"C\". " +\
+        print("\nSorry, the first character represents a position that is out of range. " +\
             "Please try again.")
         return player_input(playerNumber, boardArray)
 
-    # The second character needs to be a number less than 3 (note that the input will be 1 larger than the actual index)
-    if positionIndex[1].isdigit() and int(positionIndex[1]) <= 3 and int(positionIndex[1]) != 0:
+    # The second character needs to be a number less than the size of the board (subtract 1 because 0-indexing)
+    if positionIndex[1].isdigit() and int(positionIndex[1]) <= len(boardArray) and int(positionIndex[1]) != 0:
         positionIndex[1] = int(positionIndex[1]) - 1
     else:
-        print("\nSorry, the second character needs to be a number between 1 and 3. " +\
+        print("\nSorry, the second character represents a position that is out of range. " +\
             "Please try again.")
         return player_input(playerNumber, boardArray)  
 
@@ -68,6 +138,9 @@ def player_input(playerNumber, boardArray):
 
 # Run through every cell and check if it is in a line of 3 of itself. Return the winner, or zero
 def checkWinCondition(boardArray):
+    totalCount = 0
+    filledCount = 0
+
     y = 0
     max = len(boardArray)
 
@@ -78,6 +151,7 @@ def checkWinCondition(boardArray):
         while x < max:
             # If unmarked, no need to check for completion on this cell
             if boardArray[y][x] != 0:
+                filledCount += 1
                 # Horizontal check (skip if on edge)
                 if x != 0 and x != max-1:
                     if boardArray[y][x-1] == boardArray[y][x] and boardArray[y][x] == boardArray[y][x+1]:
@@ -93,38 +167,63 @@ def checkWinCondition(boardArray):
                     elif boardArray[y+1][x-1] == boardArray[y][x] and boardArray[y][x] == boardArray[y-1][x+1]:
                         return boardArray[y][x]
             x += 1
+            totalCount += 1
         y += 1
     
-    return 0
+    if filledCount == totalCount:
+        return -1
+    else:
+        return 0
 
+# Help menu for pre-play
+def helpMenu():
+    print("\nPossible commands: ")
+    print("R - Rules. Official rules and available commands for this version")
+    print("H - Help. Repeats this list. Not available during play")
+    print("X - Custom game. Create a board of any size from 3-9")
+    print("P - Quick play. Start a standard game on a 3x3 board")
+    print("Q - Quit. Exits program.")
 
-def main():
+def gameLoop():
     player = 1
 
-    runs = 1
+    # Give the player some initial options before playing
+    helpMenu()
+    game_board = setup_play()
 
-    # Welcome message!
-    print("Thank you for playing Tic-Tak-Toe today! Remember: first to get 3 in a row wins! X is always player 1.\n\n")
-
-    while checkWinCondition(game_board) == 0 and runs <= 9:
+    while checkWinCondition(game_board) == 0:
         print_board(game_board)
-        input = player_input(player, game_board)
+        command = player_input(player, game_board)
 
-        game_board[input[0]][input[1]] = player
+        game_board[command[0]][command[1]] = player
 
         if player == 1:
             player = 2
         else:
             player = 1
-        
-        runs += 1
     
     print_board(game_board)
     results = checkWinCondition(game_board)
     if results == 0:
-        print("\nIt's a draw!\n")
+        print("\nIt's a draw!")
     else:
         print("Player " + str(results) + " wins!")
+    
+    # There is always a chance for a re-match
+    command = input("\n\nPlay again? (Y/N)").capitalize()
+    if command == "Y":
+        gameLoop()
+    else:
+        return
 
-    print("Thank you for playing!")
+def main():
+    # Welcome message!
+    print("Welcome to Tic-Tac-Toe!\n")
+    
+    # Run the game (seperate function so now I can use recursion)
+    gameLoop()
+
+    # Let them leave on a positive note!
+    print("Thank you for playing!\n")
+
 main()
